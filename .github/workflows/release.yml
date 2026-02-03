@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Universal Binary
+        run: |
+          swift build -c release --product quickly --arch arm64 --arch x86_64
+
+      - name: Prepare Release Assets
+        run: |
+          # Copy the binary to a clean staging area
+          cp .build/apple/Products/Release/quickly ./ql
+
+          # Ensure install.sh is executable
+          chmod +x install.sh
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ql
+            install.sh
+          draft: false
+          prerelease: false
+          generate_release_notes: true
