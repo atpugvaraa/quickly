@@ -6,12 +6,14 @@
 //
 
 import Foundation
+import Core
 
 public struct SystemInfo: Sendable {
-    static let shared = SystemInfo()
+    public static let shared = SystemInfo()
     
     public let os: String
     public let arch: String
+    public let hostOS: TargetOS
     
     // Homebrew uses (e.g., "arm64_sequoia" or "sonoma") in the JSON
     public var bottleKey: String {
@@ -25,6 +27,19 @@ public struct SystemInfo: Sendable {
     private init() {
         self.os = Self.macOSVersion()
         self.arch = Self.getArch()
+        self.hostOS = Self.detectHostOS()
+    }
+    
+    private static func detectHostOS() -> TargetOS {
+        #if os(macOS)
+        return .macos
+        #elseif os(Linux)
+        return .linux
+        #elseif os(Windows)
+        return .windows
+        #else
+        fatalError("Unsupported host operating system")
+        #endif
     }
     
     private static func macOSVersion() -> String {
@@ -34,12 +49,9 @@ public struct SystemInfo: Sendable {
         case 26: return "tahoe"
         case 15: return "sequoia"
         case 14: return "sonoma"
-        case 13: return "ventura"
-        case 12: return "monterey"
-        case 11: return "big_sur"
         default:
-            print("Unknown macOS version \(version.majorVersion), defaulting to sequoia.")
-            return "sequoia"
+            print("Unknown macOS version \(version.majorVersion), defaulting to sonoma.")
+            return "sonoma"
         }
     }
     

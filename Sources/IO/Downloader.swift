@@ -28,7 +28,9 @@ public actor Downloader {
         let token = try await fetchGHCRToken(for: url)
         
         var request = URLRequest(url: url)
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        if !token.isEmpty {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         
         let (tempURL, response) = try await client.session.download(for: request)
         

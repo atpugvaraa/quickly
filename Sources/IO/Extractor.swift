@@ -14,7 +14,7 @@ public struct Extractor {
         case executionFailed(String)
     }
     
-    public func extract(file: URL, to destination: URL) throws {
+    public func extract(file: URL, to destination: URL, stripComponents: Int = 2) throws {
         if !FileManager.default.fileExists(atPath: destination.path()) {
             try FileManager.default.createDirectory(at: destination, withIntermediateDirectories: true)
         }
@@ -27,7 +27,7 @@ public struct Extractor {
         // --strip-components 1: removes the root folder (usually "wget-1.21/") so files sit flat
         let tarballProcess = Process()
         tarballProcess.executableURL = URL(fileURLWithPath: "/usr/bin/tar")
-        tarballProcess.arguments = ["-xf", file.path(), "-C", destination.path(), "--strip-components=2"]
+        tarballProcess.arguments = ["-xf", file.path(), "-C", destination.path(), "--strip-components=\(stripComponents)"]
         
         let pipe = Pipe()
         tarballProcess.standardOutput = pipe

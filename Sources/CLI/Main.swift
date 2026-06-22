@@ -7,6 +7,8 @@
 
 import ArgumentParser
 import IO
+import Core
+import Bob
 import Foundation
 
 @main
@@ -14,8 +16,74 @@ struct quickly: AsyncParsableCommand {
     static var configuration: CommandConfiguration {
         .init(
             abstract: "The lightning-fast package manager.",
-            subcommands: [Install.self, Add.self],
+            subcommands: [PackageCmd.self, Run.self, Export.self, Install.self, Add.self],
         )
+    }
+}
+
+struct PackageCmd: AsyncParsableCommand {
+    static var configuration: CommandConfiguration {
+        .init(
+            commandName: "package",
+            abstract: "Manage Swift packages.",
+            subcommands: [Init.self]
+        )
+    }
+}
+
+struct Init: AsyncParsableCommand {
+    static var configuration: CommandConfiguration {
+        .init(
+            commandName: "init",
+            abstract: "Scaffold a new QuickUI project."
+        )
+    }
+    
+    @Option(name: .shortAndLong, help: "Name of the project")
+    var name: String?
+    
+    @Argument(help: "Path to scaffold the project in")
+    var path: String?
+    
+    func run() async throws {
+        let currentPath = FileManager.default.currentDirectoryPath
+        let projectPath = path.map { URL(fileURLWithPath: $0) } ?? URL(fileURLWithPath: currentPath)
+        
+        let projectName = name ?? projectPath.lastPathComponent
+        
+        let scaffolder = Scaffolder()
+        try await scaffolder.runInit(name: projectName, projectRoot: projectPath)
+    }
+}
+
+struct Run: AsyncParsableCommand {
+    @Argument(help: "Path to the local package")
+    var path: String?
+    
+    @Flag(help: "Target OS to run on (e.g. --ios, --macos)")
+    var target: TargetOS?
+    
+    func run() async throws {
+        let packagePath = path.map { URL(fileURLWithPath: $0) } ?? URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        let resolvedTarget = target ?? SystemInfo.shared.hostOS
+        
+        let runner = Runner()
+        try await runner.run(at: packagePath, target: resolvedTarget, hostOS: SystemInfo.shared.hostOS)
+    }
+}
+
+struct Export: AsyncParsableCommand {
+    @Argument(help: "Target OS to export for (macos, ios, android, windows, linux)")
+    var target: TargetOS
+    
+    @Argument(help: "Path to the local package")
+    var path: String?
+    
+    func run() async throws {
+        let packagePath = path.map { URL(fileURLWithPath: $0) } ?? URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
+        
+        let packager = Packager()
+        try await packager.export(at: packagePath, target: target)
     }
 }
 

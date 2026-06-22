@@ -19,6 +19,16 @@ fi
 echo "Setting permissions..."
 sudo chown -R $(whoami) "$QUICKLY_DIR"
 
+# 2. Install Dependencies
+echo "Checking dependencies..."
+if command -v brew >/dev/null 2>&1; then
+    echo "Homebrew found. Installing raylib globally so bare 'swift run' works out of the box..."
+    brew install raylib
+else
+    echo "Homebrew not found. Skipping global raylib installation."
+    echo "Note: Without global raylib, use 'ql run' so quickly can inject the cellar paths!"
+fi
+
 echo "Finding latest release..."
 LATEST_TAG=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
 

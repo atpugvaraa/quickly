@@ -69,21 +69,29 @@ ql install btop
 
 ```
 
-### 🚧 [WIP] c-library bridge (the main reason this exists)
+### 🚧 C-Library Bridge & `pkg-config` (The reason `quickly` exists)
 
-installs the library and generates a `module.modulemap` for swift projects.
+`quickly` was built specifically to be the backbone of [QuickUI](https://github.com/atpugvaraa/QuickUI) — an upcoming framework bringing sweet SwiftUI-like syntax (like `@main` macros and `@ViewBuilder`) to Raylib.
+
+To make QuickUI a seamless experience, we needed a robust way to scaffold projects and inject C-libraries without breaking Swift Package Manager rules. `quickly` handles these C dependencies cleanly using `pkg-config`. 
+
+When you scaffold a QuickUI project:
+```bash
+ql package init --name MyGame .
+```
+it automatically downloads the required C-libraries (like Raylib) directly into the isolated `/opt/quickly/cellar` without polluting your global system.
+
+### running with `ql run`
+
+Because the C-libraries live in the cellar, running bare `swift run` might fail unless you've globally installed the library (e.g. via `brew install raylib`).
+
+**This is why `ql run` exists!**
 
 ```bash
-ql install raylib --lib
-
+ql run
 ```
 
-now you can actually use it:
-
-```swift
-import Raylib
-
-```
+when you invoke `ql run`, quickly automatically injects `PKG_CONFIG_PATH=/opt/quickly/cellar/...` into the environment before calling the swift compiler. SPM instantly discovers the headers and static libraries natively, enabling clean, reproducible builds without hardcoding unsafe paths in your `Package.swift`.
 
 ## how it works
 

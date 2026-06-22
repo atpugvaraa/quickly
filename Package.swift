@@ -1,12 +1,11 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.3
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
-
 let package = Package(
     name: "quickly",
     platforms: [
-        .macOS(.v13),
+        .macOS(.v14)
     ],
     products: [
         .executable(name: "quickly", targets: ["CLI"])
@@ -24,7 +23,7 @@ let package = Package(
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
                 "Core",
                 "IO",
-                "Bob"
+                "Bob",
             ],
             path: "Sources/CLI"
         ),
